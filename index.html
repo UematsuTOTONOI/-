@@ -1,205 +1,38 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
-<title>お客様アンケート</title>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;600&display=swap" rel="stylesheet">
+  const firebaseConfig = {
+    apiKey: "AIzaSyAG-q_VG4Q4tbPU57c06pIDh9sMTNJW0JM",
+    authDomain: "survey-app-ea481.firebaseapp.com",
+    projectId: "survey-app-ea481",
+    storageBucket: "survey-app-ea481.firebasestorage.app",
+    messagingSenderId: "168476269138",
+    appId: "1:168476269138:web:09e56b97836ee4732add8b"
+  };
 
-<style>
-body {
-  font-family: 'Noto Sans JP', sans-serif;
-  background: #f7f7f7;
-  margin: 0;
-  padding: 0;
-}
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-.container {
-  max-width: 600px;
-  margin: 40px auto;
-  background: #fff;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-}
+  window.submitForm = async function() {
 
-h2 {
-  text-align: center;
-  margin-bottom: 10px;
-}
+    const ratingText = document.getElementById("q1").value;
 
-.subtitle {
-  text-align: center;
-  color: #777;
-  margin-bottom: 30px;
-  font-size: 14px;
-}
+    let rating = 3;
+    if (ratingText.includes("とても満足")) rating = 5;
+    else if (ratingText.includes("満足")) rating = 4;
+    else if (ratingText.includes("普通")) rating = 3;
+    else if (ratingText.includes("不満")) rating = 2;
+    else rating = 1;
 
-label {
-  font-weight: 600;
-  display: block;
-  margin-top: 20px;
-}
+    const answers = [];
+    for(let i=1; i<=9; i++){
+      answers.push(document.getElementById("q"+i).value);
+    }
 
-select, textarea, input {
-  width: 100%;
-  padding: 12px;
-  margin-top: 8px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  font-size: 14px;
-}
+    const review = document.getElementById("reviewText").value;
 
-textarea {
-  min-height: 80px;
-}
-
-button {
-  margin-top: 30px;
-  width: 100%;
-  padding: 16px;
-  border: none;
-  background: #222;
-  color: #fff;
-  font-size: 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-button:hover {
-  background: #444;
-}
-
-.footer {
-  text-align: center;
-  font-size: 12px;
-  color: #aaa;
-  margin-top: 20px;
-}
-</style>
-</head>
-
-<body>
-
-<div class="container">
-
-<h2>ご来店ありがとうございます</h2>
-<p class="subtitle">より良いサービスのため、アンケートにご協力ください</p>
-
-<!-- ①満足度 -->
-<label>① 総合満足度</label>
-<select id="q1">
-<option>とても満足</option>
-<option>満足</option>
-<option>普通</option>
-<option>不満</option>
-<option>とても不満</option>
-</select>
-
-<!-- ②料理 -->
-<label>② 料理の味はいかがでしたか？</label>
-<select id="q2">
-<option>とても良い</option>
-<option>良い</option>
-<option>普通</option>
-<option>イマイチ</option>
-<option>悪い</option>
-</select>
-
-<!-- ③見た目 -->
-<label>③ 料理の見た目・盛り付け</label>
-<select id="q3">
-<option>とても良い</option>
-<option>良い</option>
-<option>普通</option>
-<option>イマイチ</option>
-<option>悪い</option>
-</select>
-
-<!-- ④接客 -->
-<label>④ スタッフの接客</label>
-<select id="q4">
-<option>とても良い</option>
-<option>良い</option>
-<option>普通</option>
-<option>イマイチ</option>
-<option>悪い</option>
-</select>
-
-<!-- ⑤提供スピード -->
-<label>⑤ 提供スピード</label>
-<select id="q5">
-<option>とても早い</option>
-<option>早い</option>
-<option>普通</option>
-<option>遅い</option>
-<option>とても遅い</option>
-</select>
-
-<!-- ⑥清潔感 -->
-<label>⑥ 店内の清潔感</label>
-<select id="q6">
-<option>とても綺麗</option>
-<option>綺麗</option>
-<option>普通</option>
-<option>少し気になる</option>
-<option>気になる</option>
-</select>
-
-<!-- ⑦価格 -->
-<label>⑦ 価格の満足度</label>
-<select id="q7">
-<option>とても満足</option>
-<option>満足</option>
-<option>普通</option>
-<option>高い</option>
-<option>とても高い</option>
-</select>
-
-<!-- ⑧再来店 -->
-<label>⑧ また来店したいですか？</label>
-<select id="q8">
-<option>ぜひ来たい</option>
-<option>来たい</option>
-<option>どちらでもない</option>
-<option>あまり来たくない</option>
-<option>来たくない</option>
-</select>
-
-<!-- ⑨おすすめ -->
-<label>⑨ 知人におすすめしたいですか？</label>
-<select id="q9">
-<option>強くおすすめしたい</option>
-<option>おすすめしたい</option>
-<option>普通</option>
-<option>あまりおすすめしない</option>
-<option>おすすめしない</option>
-</select>
-
-<!-- ⑩自由記述 -->
-<label>⑩ 応援メッセージ・ご意見</label>
-<textarea id="reviewText" placeholder="そのまま口コミとして使用させていただく場合があります"></textarea>
-
-<button onclick="submitForm()">送信して口コミを書く</button>
-
-<div class="footer">
-ご協力ありがとうございます 🙏
-</div>
-
-</div>
-
-<script>
-function submitForm() {
-
-  const answers = [];
-  for(let i=1; i<=9; i++){
-    answers.push(document.getElementById("q"+i).value);
-  }
-
-  const review = document.getElementById("reviewText").value;
-
-  const text = `
+    const text = `
 【総合】${answers[0]}
 【料理】${answers[1]}
 【見た目】${answers[2]}
@@ -213,13 +46,21 @@ function submitForm() {
 ${review}
 `;
 
-  navigator.clipboard.writeText(text);
+    // 🔥 Firebase保存
+    await addDoc(collection(db, "surveys"), {
+      rating: rating,
+      answers: answers,
+      review: review,
+      createdAt: new Date()
+    });
 
-  alert("口コミ用の文章をコピーしました！貼り付けて投稿してください。");
-
-  window.location.href = "https://search.google.com/local/writereview?placeid=ChIJpxQqNPpvGWARHRWC-Ic55VM";
-}
+    // 分岐
+    if (rating >= 4) {
+      await navigator.clipboard.writeText(text);
+      alert("口コミ用の文章をコピーしました！");
+      window.location.href = "https://search.google.com/local/writereview?placeid=YOUR_PLACE_ID";
+    } else {
+      alert("貴重なご意見ありがとうございます！");
+    }
+  }
 </script>
-
-</body>
-</html>
